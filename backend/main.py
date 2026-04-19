@@ -6,8 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import json
 import os
 import datetime
-# 🚀 Migration to the NEW Google GenAI SDK
-from google import genai
+import requests
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -70,40 +69,52 @@ async def chat_with_assistant(request: ChatRequest):
         return {"reply": "Configuration Error: No AI API key found.", "suggested_actions": []}
 
     try:
-        # Initialize the NEW GenAI Client
-        client = genai.Client(api_key=api_key)
+        # 🔗 V7: DIRECT REST STABILIZER (Bypassing SDK to avoid v1beta errors)
+        # Using the absolute most stable 'v1' endpoint
+        url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
+        
+        headers = {'Content-Type': 'application/json'}
         
         system_prompt = f"""
-        You are Elyra, a premium AI Event Assistant. 
+        You are Elyra, a premium AI Event Assistant.
         CONTEXT: {json.dumps(BASE_EVENT_DATA)}
         CURRENT_TIME: {simulated_time}
         USER_ZONE: {request.user_zone}
         
         LOGIC:
-        1. Answer based on the CONTEXT. Be helpful and expert.
-        2. Always suggest 2 follow-up questions.
-        3. Respond strictly in JSON format:
-        {{"reply": "your text", "suggested_actions": ["question 1", "question 2"]}}
+        1. Answer based on CONTEXT. 
+        2. Respond STRICTLY in JSON:
+        {{"reply": "text", "suggested_actions": ["q1", "q2"]}}
         """
         
-        # Using the STABLE Gemini 1.5 Flash engine with the NEW SDK
-        response = client.models.generate_content(
-            model='gemini-1.5-flash',
-            contents=f"{system_prompt}\n\nUSER QUERY: {request.query}"
-        )
+        payload = {
+            "contents": [{
+                "parts": [{"text": f"{system_prompt}\n\nUSER QUERY: {request.query}"}]
+            }]
+        }
         
-        text = response.text
+        response = requests.post(url, headers=headers, json=payload)
+        resp_json = response.json()
         
+        if response.status_code != 200:
+            error_msg = resp_json.get('error', {}).get('message', 'Unknown API Error')
+            return {
+                "reply": f"[V7 PROTECT] API Error: {error_msg}. Status code: {response.status_code}",
+                "suggested_actions": ["Try again", "Show map"]
+            }
+
+        # Extracting text from standard Gemini REST response
         try:
-             # Cleanup and Parse
-             clean_text = text.replace('```json', '').replace('```', '').strip()
-             return json.loads(clean_text)
-        except:
-             return {"reply": text, "suggested_actions": ["What else?", "Show map"]}
+            raw_text = resp_json['candidates'][0]['content']['parts'][0]['text']
+            # Clean and parse
+            clean_text = raw_text.replace('```json', '').replace('```', '').strip()
+            return json.loads(clean_text)
+        except Exception as parse_err:
+             return {"reply": raw_text if 'raw_text' in locals() else str(resp_json), "suggested_actions": ["Ask something else", "Show map"]}
             
     except Exception as e:
         return {
-            "reply": f"AI Engine Connection issue: {str(e)}. Please retry in a few moments.",
+            "reply": f"[V7 PROTECT] System Connection issue: {str(e)}. Please retry.",
             "suggested_actions": ["Try again", "Show map"]
         }
 
