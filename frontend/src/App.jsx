@@ -350,7 +350,7 @@ function App() {
 
   // Organizer Auth Flow
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [orgAuthStep, setOrgAuthStep] = useState('choice'); // 'choice', 'pin'
+  const [orgAuthStep, setOrgAuthStep] = useState('choice'); // 'choice', 'pin', 'new_event'
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState(false);
 
@@ -448,6 +448,24 @@ function App() {
       handleVerifyAdmin(newPin);
     }
   };
+
+  // Keyboard support for PIN Pad
+  useEffect(() => {
+    if (appView !== 'organiser_auth' || orgAuthStep !== 'pin') return;
+
+    const handleKeyDown = (e) => {
+      if (e.key >= '0' && e.key <= '9') {
+        handlePinInput(e.key);
+      } else if (e.key === 'Backspace') {
+        setPin(prev => prev.slice(0, -1));
+      } else if (e.key === 'Escape') {
+        setOrgAuthStep('choice');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [appView, orgAuthStep, pin]);
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -578,7 +596,7 @@ function App() {
                   <span style={{fontSize: '1rem', fontWeight: 'bold'}}>Access Dashboard</span>
                   <span style={{fontSize: '0.75rem', opacity: 0.7, fontWeight: 'normal'}}>Manage your existing live event and schedules.</span>
                 </button>
-                <button className="action-btn" style={{width: '240px', padding: '24px 20px', borderRadius: '24px', height: 'auto', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.1)'}} onClick={() => setOrgAuthStep('pin')}>
+                <button className="action-btn" style={{width: '240px', padding: '24px 20px', borderRadius: '24px', height: 'auto', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.1)'}} onClick={() => setOrgAuthStep('new_event')}>
                   <Sparkles size={20} />
                   <span style={{fontSize: '1rem', fontWeight: 'bold'}}>Host New Event</span>
                   <span style={{fontSize: '0.75rem', opacity: 0.7, fontWeight: 'normal'}}>Set up a fresh experience from scratch.</span>
@@ -616,6 +634,37 @@ function App() {
 
               <button 
                 style={{background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.85rem'}}
+                onClick={() => setOrgAuthStep('choice')}
+              >
+                ← Back
+              </button>
+            </div>
+          ) : (
+            <div style={{animation: 'fadeIn 0.4s ease forwards', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', maxWidth: '400px', textAlign: 'center'}}>
+              <div style={{background: 'rgba(0, 212, 204, 0.1)', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', border: '1px solid rgba(0, 212, 204, 0.3)'}}>
+                  <UploadCloud size={30} className="text-primary" />
+              </div>
+              <div>
+                <h1 style={{fontSize: '1.5rem', fontWeight: '700', marginBottom: '8px'}}>Initialize Event</h1>
+                <p style={{color: 'var(--text-muted)', fontSize: '0.85rem'}}>Please upload your event structure (CSV) to begin.</p>
+              </div>
+
+              <div className="upload-zone" style={{width: '100%', border: '2px dashed rgba(255,255,255,0.1)', borderRadius: '24px', padding: '40px 20px', background: 'rgba(255,255,255,0.02)', position: 'relative'}}>
+                <input 
+                  type="file" 
+                  accept=".csv" 
+                  onChange={(e) => {
+                    handleFileUpload(e);
+                    setIsAuthenticated(true); // Grant access upon upload
+                  }}
+                  style={{position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer'}}
+                />
+                <p style={{fontSize: '0.9rem', marginBottom: '8px'}}>Select CSV File</p>
+                <p style={{fontSize: '0.7rem', opacity: 0.6}}>Supports: Schedule, Zones, Facilities</p>
+              </div>
+
+              <button 
+                style={{background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.85rem', marginTop: '10px'}}
                 onClick={() => setOrgAuthStep('choice')}
               >
                 ← Back
