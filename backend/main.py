@@ -69,8 +69,8 @@ async def chat_with_assistant(request: ChatRequest):
         return {"reply": "Configuration Error: No AI API key found.", "suggested_actions": []}
 
     try:
-        # 🔗 THE FINAL TARGET: v1beta + gemini-1.5-flash (AI Studio Stable Path)
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+        # 🔗 V10: THE FINAL STABILIZER (v1beta + gemini-1.5-flash-latest)
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={api_key}"
         
         headers = {'Content-Type': 'application/json'}
         
