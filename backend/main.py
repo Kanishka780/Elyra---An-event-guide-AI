@@ -24,6 +24,22 @@ app.add_middleware(
 # Configuration
 DATA_FILE = os.path.join(os.path.dirname(__file__), "event_data.json")
 
+def normalize_date(time_str: str):
+    """Ensures dates are in ISO format for the frontend."""
+    if not time_str:
+        return datetime.datetime.now().isoformat()
+    
+    # Handle HH:MM or HH:MM:SS format by prepending current event date
+    if ":" in time_str and len(time_str) <= 8:
+        # Default to 20th April 2026 as per user event context
+        return f"2026-04-20T{time_str}:00+05:30"
+    
+    # Try to fix dash-based dates for JS compatibility
+    if "-" in time_str and "T" not in time_str:
+        return time_str.replace(" ", "T") + "+05:30"
+        
+    return time_str
+
 # Load base data
 def load_data():
     if os.path.exists(DATA_FILE):
@@ -75,11 +91,22 @@ async def upload_csv(file: UploadFile = File(...)):
                 "name": row.get('name', 'Unnamed Event'),
                 "location": row.get('location', 'TBD'),
                 "zone": row.get('zone', 'Zone A'),
-                "startTime": row.get('startTime', datetime.datetime.now().isoformat()),
-                "endTime": row.get('endTime', datetime.datetime.now().isoformat()),
+                "startTime": normalize_date(row.get('startTime', '')),
+                "endTime": normalize_date(row.get('endTime', '')),
                 "description": row.get('description', '')
             })
+        
+        # Update events
         BASE_EVENT_DATA["events"] = new_events
+        
+        # 🛡️ CLEANUP: Clear stale announcements and alerts to match new data context
+        BASE_EVENT_DATA["announcements"] = []
+        if "live_status" in BASE_EVENT_DATA:
+            BASE_EVENT_DATA["live_status"]["crowd_alerts"] = []
+            BASE_EVENT_DATA["live_status"]["facility_issues"] = []
+        if "emergency" in BASE_EVENT_DATA:
+            BASE_EVENT_DATA["emergency"]["active_cases"] = []
+            
         return {"success": True, "count": len(new_events)}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

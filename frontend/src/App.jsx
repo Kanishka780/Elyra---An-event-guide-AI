@@ -338,6 +338,13 @@ function App() {
   const [eventData, setEventData] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   
+  const formatTime = (timeStr) => {
+    if (!timeStr) return "N/A";
+    const d = new Date(timeStr);
+    if (isNaN(d.getTime())) return timeStr; // Fallback to raw string if invalid
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -892,7 +899,7 @@ function App() {
                     <p className="event-loc"><MapPin size={10} /> {e.zone}</p>
                     <p className="event-time">
                       <Clock size={10} />
-                      {new Date(e.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {new Date(e.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                      {formatTime(e.startTime)} - {formatTime(e.endTime)}
                     </p>
                   </div>
                 ))}
@@ -1142,8 +1149,8 @@ function App() {
             <div className="popup-time-box">
               <p className="label">Schedule</p>
               <div>
-                <strong>Start:</strong> {new Date(selectedEvent.startTime).toLocaleString([], {weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'})}<br/>
-                <strong>End:</strong> {new Date(selectedEvent.endTime).toLocaleString([], {hour: '2-digit', minute: '2-digit'})}
+                <strong>Start:</strong> {formatTime(selectedEvent.startTime)}<br/>
+                <strong>End:</strong> {formatTime(selectedEvent.endTime)}
               </div>
             </div>
             
