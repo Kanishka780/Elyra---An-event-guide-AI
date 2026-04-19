@@ -23,24 +23,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve static files from React build
-STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
-if os.path.exists(STATIC_DIR):
-    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static_assets")
-    
-    # Optional: Serve index.html at root if it exists
-    from fastapi.responses import FileResponse
-    @app.get("/", include_in_schema=False)
-    @app.get("/{full_path:path}", include_in_schema=False)
-    async def serve_frontend(request: Request, full_path: str = ""):
-        # If the path looks like an API call, return 404
-        if full_path.startswith("api"):
-            raise HTTPException(status_code=404, detail="API route not found")
-        
-        index_file = os.path.join(STATIC_DIR, "index.html")
-        if os.path.exists(index_file):
-            return FileResponse(index_file)
-        return {"message": "Elyra Backend is running. Frontend assets not found locally."}
+# (Static serving logic moved to the bottom of the file for correctness)
 
 # Load context data
 DATA_FILE = os.path.join(os.path.dirname(__file__), "event_data.json")
@@ -298,14 +281,25 @@ def chat_with_assistant(request: ChatRequest):
 
 # Mount static files for production deployment (Docker)
 import os as os_mod
+# ═══════════════════════════ PRODUCTION STATIC SERVING ═══════════════════════════
+# This block MUST come after all API routes to avoid catching API calls.
 STATIC_DIR = os_mod.path.join(os_mod.path.dirname(__file__), "static")
 if os_mod.path.exists(STATIC_DIR):
     from fastapi.staticfiles import StaticFiles
     from fastapi.responses import FileResponse
     
+    # 1. Mount the assets folder (where Vite puts JS/CSS)
     app.mount("/assets", StaticFiles(directory=os_mod.path.join(STATIC_DIR, "assets")), name="assets")
     
-    @app.get("/{full_path:path}")
+    # 2. Serve index.html for the root path
+    @app.get("/", include_in_schema=False)
+    def serve_root():
+        return FileResponse(os_mod.path.join(STATIC_DIR, "index.html"))
+
+    # 3. SPA Routing Catch-All (Return index.html for all other non-API routes)
+    @app.get("/{full_path:path}", include_in_schema=False)
     def serve_react_app(full_path: str):
-        # Serve index.html for unknown routes to support SPA
+        # We don't want to catch /api calls here
+        if full_path.startswith("api"):
+             raise HTTPException(status_code=404, detail="API Route Not Found")
         return FileResponse(os_mod.path.join(STATIC_DIR, "index.html"))
