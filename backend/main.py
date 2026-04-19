@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import json
 import os
 import datetime
-import requests
+import google.generativeai as genai
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -69,10 +69,11 @@ async def chat_with_assistant(request: ChatRequest):
         return {"reply": "Configuration Error: No AI API key found.", "suggested_actions": []}
 
     try:
-        # 🔗 V10: THE FINAL STABILIZER (v1beta + gemini-1.5-flash-latest)
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={api_key}"
+        # OFFICIAL SDK CONFIGURATION (Python equivalent of your recommended fix)
+        genai.configure(api_key=api_key)
         
-        headers = {'Content-Type': 'application/json'}
+        # This model name is the universal stable alias in the official SDK
+        model = genai.GenerativeModel('gemini-1.5-flash')
         
         system_prompt = f"""
         You are Elyra, a premium AI Event Assistant.
@@ -86,36 +87,21 @@ async def chat_with_assistant(request: ChatRequest):
         {{"reply": "text", "suggested_actions": ["q1", "q2"]}}
         """
         
-        payload = {
-            "contents": [{
-                "parts": [{"text": f"{system_prompt}\n\nUSER QUERY: {request.query}"}]
-            }]
-        }
+        # Inference using the official SDK
+        response = model.generate_content(f"{system_prompt}\n\nUSER QUERY: {request.query}")
         
-        response = requests.post(url, headers=headers, json=payload)
-        resp_json = response.json()
+        raw_text = response.text
         
-        if response.status_code != 200:
-            error_msg = resp_json.get('error', {}).get('message', 'Unknown API Error')
-            return {
-                "reply": f"API Connection issue: {error_msg}. Status code: {response.status_code}",
-                "suggested_actions": ["Try again", "Show map"]
-            }
-
-        # Parsing the standard Gemini REST response
         try:
-            raw_text = resp_json['candidates'][0]['content']['parts'][0]['text']
-            clean_text = raw_text.replace('```json', '').replace('```', '').strip()
-            return json.loads(clean_text)
-        except Exception as parse_err:
-             # Fallback if raw text returned
-             if 'raw_text' in locals():
-                return {"reply": raw_text, "suggested_actions": ["Ask something else", "Show map"]}
-             return {"reply": str(resp_json), "suggested_actions": ["Try again", "Show map"]}
+             # Cleanup and Parse
+             clean_text = raw_text.replace('```json', '').replace('```', '').strip()
+             return json.loads(clean_text)
+        except:
+             return {"reply": raw_text, "suggested_actions": ["What else?", "Show map"]}
             
     except Exception as e:
         return {
-            "reply": f"System Connection issue: {str(e)}. Please retry.",
+            "reply": f"AI Engine Connection issue: {str(e)}. Please retry in a few moments.",
             "suggested_actions": ["Try again", "Show map"]
         }
 
