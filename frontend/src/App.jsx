@@ -486,11 +486,14 @@ function App() {
 
     try {
       setIsLoading(true);
-      const response = await axios.post(`${API_BASE_URL}/upload-csv`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      alert(response.data.message);
-      fetchEventStatus(); // Refresh schedule
+      await axios.post(`${API_BASE_URL}/upload-csv`, formData);
+      
+      if (orgAuthStep === 'new_event') {
+        setOrgAuthStep('set_pin');
+        setPin(''); // Reset pin for the creation step
+      } else {
+        fetchEventStatus();
+      }
     } catch (error) {
       alert(`Upload failed: ${error.response?.data?.detail || error.message}`);
     } finally {
@@ -642,11 +645,52 @@ function App() {
               </div>
 
               <button 
-                style={{background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.85rem'}}
+                style={{background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.85rem', marginTop: '10px'}}
                 onClick={() => setOrgAuthStep('choice')}
               >
                 ← Back
               </button>
+            </div>
+          ) : orgAuthStep === 'set_pin' ? (
+            <div className={`pin-auth-container`} style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px', animation: 'fadeIn 0.4s ease forwards'}}>
+              <div style={{textAlign: 'center'}}>
+                <div style={{background: 'rgba(139, 92, 246, 0.1)', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', border: '1px solid rgba(139, 92, 246, 0.3)'}}>
+                  <ShieldCheck size={30} className="text-primary" />
+                </div>
+                <h2 style={{fontSize: '1.5rem', fontWeight: '700', marginBottom: '8px'}}>Secure Your Organization</h2>
+                <p style={{color: 'var(--text-muted)', fontSize: '0.85rem'}}>Create a 4-digit PIN to manage this event later</p>
+              </div>
+
+              <div style={{display: 'flex', gap: '16px'}}>
+                {[0, 1, 2, 3].map(i => (
+                  <div key={i} className={`pin-dot ${pin.length > i ? 'active' : ''}`} />
+                ))}
+              </div>
+
+              <div className="pin-keypad">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
+                  <button key={num} onClick={() => {
+                    if (pin.length < 4) {
+                      const newPin = pin + num;
+                      setPin(newPin);
+                      if (newPin.length === 4) handleCreatePin(newPin);
+                    }
+                  }}>{num}</button>
+                ))}
+                <button onClick={() => setPin('')} style={{fontSize: '0.7rem', color: 'var(--text-muted)'}}>CLS</button>
+                <button onClick={() => {
+                  if (pin.length < 4) {
+                    const newPin = pin + '0';
+                    setPin(newPin);
+                    if (newPin.length === 4) handleCreatePin(newPin);
+                  }
+                }}>0</button>
+                <button onClick={() => setPin(pin.slice(0, -1))} style={{fontSize: '0.7rem', color: 'var(--text-muted)'}}>DEL</button>
+              </div>
+
+              <div style={{fontSize: '0.75rem', opacity: 0.6, maxWidth: '250px', textAlign: 'center'}}>
+                Write this down! This PIN will be required to access your Command Center.
+              </div>
             </div>
           ) : (
             <div style={{animation: 'fadeIn 0.4s ease forwards', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', maxWidth: '400px', textAlign: 'center'}}>
@@ -664,7 +708,6 @@ function App() {
                   accept=".csv" 
                   onChange={(e) => {
                     handleFileUpload(e);
-                    setIsAuthenticated(true); // Grant access upon upload
                   }}
                   style={{position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer'}}
                 />

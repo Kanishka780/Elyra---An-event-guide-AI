@@ -136,11 +136,18 @@ class ChatRequest(BaseModel):
 class AdminVerifyRequest(BaseModel):
     pin: str
 
+# Global store for the current session's pin (defaults to 1234)
+CURRENT_ADMIN_PIN = os.environ.get("ADMIN_PIN", "1234")
+
+@app.post("/api/set-admin-pin")
+def set_admin_pin(request: AdminVerifyRequest):
+    global CURRENT_ADMIN_PIN
+    CURRENT_ADMIN_PIN = request.pin
+    return {"success": True, "message": "PIN updated successfully"}
+
 @app.post("/api/verify-admin")
 def verify_admin(request: AdminVerifyRequest):
-    # Use environment variable with fallback to 1234
-    correct_pin = os.environ.get("ADMIN_PIN", "1234")
-    if request.pin == correct_pin:
+    if request.pin == CURRENT_ADMIN_PIN:
         return {"success": True, "message": "Access Granted"}
     raise HTTPException(status_code=401, detail="Invalid PIN")
 
