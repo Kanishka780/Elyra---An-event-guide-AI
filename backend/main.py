@@ -69,11 +69,11 @@ async def chat_with_assistant(request: ChatRequest):
         return {"reply": "Configuration Error: No AI API key found.", "suggested_actions": []}
 
     try:
-        # OFFICIAL SDK CONFIGURATION (Using the explicit versioned ID: 001)
+        # OFFICIAL SDK CONFIGURATION (Using the universal stable model: gemini-pro)
         genai.configure(api_key=api_key)
         
-        # This explicit ID is more stable for AI Studio project levels
-        model = genai.GenerativeModel('gemini-1.5-flash-001')
+        # gemini-pro is the most backward-compatible and universally accessible model
+        model = genai.GenerativeModel('gemini-pro')
         
         system_prompt = f"""
         You are Elyra, a premium AI Event Assistant.
