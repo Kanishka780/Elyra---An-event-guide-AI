@@ -348,6 +348,12 @@ function App() {
   const [appView, setAppView] = useState('portal');
   const [isVerifying, setIsVerifying] = useState(false);
 
+  // Organizer Auth Flow
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [orgAuthStep, setOrgAuthStep] = useState('choice'); // 'choice', 'pin'
+  const [pin, setPin] = useState('');
+  const [pinError, setPinError] = useState(false);
+
   // Proactive AI Engine State
   const [notifiedEvents, setNotifiedEvents] = useState(new Set());
 
@@ -411,6 +417,35 @@ function App() {
       setMessages(prev => [...prev, { role: 'assistant', text: 'Sorry, I am having trouble connecting to the backend server. Make sure it is running and your API key is set!' }]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleVerifyAdmin = async (finalPin) => {
+    const pinToTest = finalPin || pin;
+    if (pinToTest.length < 4) return;
+
+    try {
+      setIsLoading(true);
+      const response = await axios.post(`${API_BASE_URL}/verify-admin`, { pin: pinToTest });
+      if (response.data.success) {
+        setIsAuthenticated(true);
+        setAppView('organiser');
+      }
+    } catch (error) {
+      setPinError(true);
+      setPin('');
+      setTimeout(() => setPinError(false), 500);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePinInput = (num) => {
+    if (pin.length >= 4) return;
+    const newPin = pin + num;
+    setPin(newPin);
+    if (newPin.length === 4) {
+      handleVerifyAdmin(newPin);
     }
   };
 
@@ -497,7 +532,14 @@ function App() {
         <AmbientBackground isDark={isDark} />
         {!isMobile && <CustomCursor />}
         <div className="portal-container">
-          <div className="portal-card org-purple" onClick={() => setAppView('organiser')}>
+          <div className="portal-card org-purple" onClick={() => {
+            if (isAuthenticated) {
+              setAppView('organiser');
+            } else {
+              setAppView('organiser_auth');
+              setOrgAuthStep('choice');
+            }
+          }}>
             <div className="portal-icon-wrapper"><ShieldCheck size={48} /></div>
             <h1>Organizer</h1>
             <p>Launch an event, upload schedules, and manage real-time alerts from the command center.</p>
@@ -507,6 +549,79 @@ function App() {
             <h1>Attendee</h1>
             <p>Scan your event code to unlock your personalized AI travel guide and live venue navigator.</p>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ═══════════════════════════════ VIEW: ORGANISER AUTH ═══════════════════════════════ */
+  if (appView === 'organiser_auth') {
+    return (
+      <div className={`org-purple ${isDark ? 'dark' : 'light'}`} style={{color: 'var(--text-main)'}}>
+        <AmbientBackground isDark={isDark} />
+        {!isMobile && <CustomCursor />}
+        <div className="portal-container" style={{flexDirection: 'column', gap: '20px', zIndex: 100, padding: '20px'}}>
+          
+          {orgAuthStep === 'choice' ? (
+            <div style={{animation: 'fadeIn 0.4s ease forwards', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px'}}>
+              <div style={{textAlign: 'center', marginBottom: '10px'}}>
+                <div style={{background: 'rgba(139, 92, 246, 0.1)', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', border: '1px solid rgba(139, 92, 246, 0.3)'}}>
+                  <ShieldCheck size={40} className="text-primary" />
+                </div>
+                <h1 style={{fontSize: '2rem', fontWeight: '800', marginBottom: '8px'}}>Command Center</h1>
+                <p style={{color: 'var(--text-muted)'}}>Choose your management mode</p>
+              </div>
+
+              <div style={{display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center'}}>
+                <button className="action-btn org-purple" style={{width: '240px', padding: '24px 20px', borderRadius: '24px', height: 'auto', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '8px'}} onClick={() => setOrgAuthStep('pin')}>
+                  <Zap size={20} />
+                  <span style={{fontSize: '1rem', fontWeight: 'bold'}}>Access Dashboard</span>
+                  <span style={{fontSize: '0.75rem', opacity: 0.7, fontWeight: 'normal'}}>Manage your existing live event and schedules.</span>
+                </button>
+                <button className="action-btn" style={{width: '240px', padding: '24px 20px', borderRadius: '24px', height: 'auto', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.1)'}} onClick={() => setOrgAuthStep('pin')}>
+                  <Sparkles size={20} />
+                  <span style={{fontSize: '1rem', fontWeight: 'bold'}}>Host New Event</span>
+                  <span style={{fontSize: '0.75rem', opacity: 0.7, fontWeight: 'normal'}}>Set up a fresh experience from scratch.</span>
+                </button>
+              </div>
+
+              <button 
+                style={{background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.85rem', marginTop: '10px'}}
+                onClick={() => setAppView('portal')}
+              >
+                ← Back to Selection
+              </button>
+            </div>
+          ) : (
+            <div className={`pin-auth-container ${pinError ? 'shake' : ''}`} style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px', animation: 'fadeIn 0.4s ease forwards'}}>
+              <div style={{textAlign: 'center'}}>
+                <h2 style={{fontSize: '1.5rem', fontWeight: '700', marginBottom: '8px'}}>Secure Admin Entry</h2>
+                <p style={{color: 'var(--text-muted)', fontSize: '0.85rem'}}>Please enter your 4-digit access code</p>
+              </div>
+
+              <div style={{display: 'flex', gap: '16px'}}>
+                {[0, 1, 2, 3].map(i => (
+                  <div key={i} className={`pin-dot ${pin.length > i ? 'active' : ''}`} />
+                ))}
+              </div>
+
+              <div className="pin-keypad">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
+                  <button key={num} onClick={() => handlePinInput(num.toString())}>{num}</button>
+                ))}
+                <button onClick={() => setPin('')} style={{fontSize: '0.7rem', color: 'var(--text-muted)'}}>CLS</button>
+                <button onClick={() => handlePinInput('0')}>0</button>
+                <button onClick={() => setPin(pin.slice(0, -1))} style={{fontSize: '0.7rem', color: 'var(--text-muted)'}}>DEL</button>
+              </div>
+
+              <button 
+                style={{background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.85rem'}}
+                onClick={() => setOrgAuthStep('choice')}
+              >
+                ← Back
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );

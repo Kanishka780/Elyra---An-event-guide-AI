@@ -133,6 +133,17 @@ class ChatRequest(BaseModel):
     user_zone: str = "Entrance Gate"
     current_time: str = "" # ISO Format string
 
+class AdminVerifyRequest(BaseModel):
+    pin: str
+
+@app.post("/api/verify-admin")
+def verify_admin(request: AdminVerifyRequest):
+    # Use environment variable with fallback to 1234
+    correct_pin = os.environ.get("ADMIN_PIN", "1234")
+    if request.pin == correct_pin:
+        return {"success": True, "message": "Access Granted"}
+    raise HTTPException(status_code=401, detail="Invalid PIN")
+
 @app.get("/api/event_status")
 def get_event_status():
     return get_dynamic_status()

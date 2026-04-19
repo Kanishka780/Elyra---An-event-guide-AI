@@ -718,3 +718,44 @@ h1, h2, h3, h4, h5, h6 {
 .text-primary { color: var(--primary); }
 .org-purple { --primary: #8B5CF6; --primary-hover: #7c3aed; }
 .att-teal { --primary: #00D4CC; --primary-hover: #00b8b2; }
+
+/* ═══════════════════════════ PIN AUTH STYLES ═══════════════════════════ */
+.pin-dot {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.pin-dot.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  box-shadow: 0 0 15px var(--primary);
+  transform: scale(1.2);
+}
+
+.pin-keypad {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+}
+.pin-keypad button {
+  width: 70px; height: 70px; border-radius: 50%;
+  border: 1px solid var(--border-light);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-main); font-size: 1.25rem; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.pin-keypad button:hover {
+  background: var(--primary); color: #fff;
+  transform: translateY(-2px); border-color: transparent;
+  box-shadow: var(--glow-teal);
+}
+.pin-keypad button:active { transform: scale(0.9); }
+
+.shake {
+  animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
