@@ -1,10 +1,12 @@
 # Stage 1: Build robust frontend
-FROM node:20-slim AS build
+FROM node:20 AS build
 WORKDIR /app/frontend
 
-# Use --frozen-lockfile or similar isn't strictly needed for prototype but COPYing correctly is
+# Copy dependency files
 COPY frontend/package*.json ./
-RUN npm install
+
+# Clean install of dependencies
+RUN npm ci
 
 COPY frontend/ ./
 RUN npm run build
