@@ -1,0 +1,28 @@
+# Secrets
+.env
+.env.*
+secrets.json
+
+# Dependencies
+node_modules/
+venv/
+env/
+.venv/
+bin/
+lib/
+share/
+Include/
+
+# Build Artifacts
+frontend/dist/
+backend/static/
+*.pyc
+__pycache__/
+.pytest_cache/
+
+# OS/IDEs
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.bak

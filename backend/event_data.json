@@ -1,0 +1,174 @@
+{
+  "events": [
+    {
+      "id": "e1",
+      "name": "Opening Ceremony",
+      "location": "Main Stage",
+      "zone": "Zone A",
+      "startTime": "2026-04-19T10:00:00+05:30",
+      "endTime": "2026-04-19T11:00:00+05:30",
+      "description": "Kickoff event with organizers and special guests."
+    },
+    {
+      "id": "e2",
+      "name": "Tech Talk: AI in Future",
+      "location": "Stage B",
+      "zone": "Zone B",
+      "startTime": "2026-04-19T14:00:00+05:30",
+      "endTime": "2026-04-19T15:30:00+05:30",
+      "description": "Panel discussion on the future of AI technology."
+    },
+    {
+      "id": "e3",
+      "name": "Live Band Concert",
+      "location": "Main Stage",
+      "zone": "Zone A",
+      "startTime": "2026-04-19T18:00:00+05:30",
+      "endTime": "2026-04-19T20:00:00+05:30",
+      "description": "Headline performance by The Rockers."
+    },
+    {
+      "id": "e4",
+      "name": "DJ Night",
+      "location": "Open Arena",
+      "zone": "Zone C",
+      "startTime": "2026-04-19T21:00:00+05:30",
+      "endTime": "2026-04-19T23:30:00+05:30",
+      "description": "Late night music and dance."
+    }
+  ],
+  "facilities": [
+    {
+      "type": "restroom",
+      "name": "Restroom A",
+      "zone": "Zone A",
+      "crowd_level": "high"
+    },
+    {
+      "type": "restroom",
+      "name": "Restroom B",
+      "zone": "Zone B",
+      "crowd_level": "low"
+    },
+    {
+      "type": "food",
+      "name": "Food Court 1",
+      "zone": "Zone C",
+      "crowd_level": "medium"
+    },
+    {
+      "type": "exit",
+      "name": "Exit Gate 1",
+      "zone": "Entrance Gate",
+      "crowd_level": "high"
+    }
+  ],
+  "zones": [
+    {
+      "name": "Entrance Gate",
+      "connected_to": ["Zone A"]
+    },
+    {
+      "name": "Zone A",
+      "connected_to": ["Zone B", "Zone C"]
+    },
+    {
+      "name": "Zone B",
+      "connected_to": ["Zone A"]
+    },
+    {
+      "name": "Zone C",
+      "connected_to": ["Zone A"]
+    }
+  ],
+  "live_status": {
+    "crowd_alerts": [
+      {
+        "zone": "Zone A",
+        "level": "high",
+        "message": "Heavy crowd near Main Stage"
+      }
+    ],
+    "facility_issues": [
+      {
+        "type": "restroom",
+        "zone": "Zone A",
+        "issue": "Overcrowded"
+      }
+    ]
+  },
+  "entry_status": {
+    "gates": [
+      {
+        "name": "Gate 1",
+        "status": "open",
+        "crowd_level": "high",
+        "wait_time": "20 min"
+      },
+      {
+        "name": "Gate 2",
+        "status": "open",
+        "crowd_level": "low",
+        "wait_time": "5 min"
+      }
+    ]
+  },
+  "food_stalls": [
+    {
+      "name": "Pizza Stall",
+      "zone": "Zone C",
+      "wait_time": "25 min",
+      "crowd_level": "high"
+    },
+    {
+      "name": "Snack Bar",
+      "zone": "Zone B",
+      "wait_time": "5 min",
+      "crowd_level": "low"
+    }
+  ],
+  "emergency": {
+    "active_cases": [
+      {
+        "type": "medical",
+        "zone": "Zone A",
+        "severity": "medium",
+        "message": "Person fainted near stage"
+      }
+    ],
+    "help_centers": [
+      {
+        "name": "Medical Camp 1",
+        "zone": "Zone B"
+      }
+    ]
+  },
+  "distances": [
+    {
+      "from": "Entrance Gate",
+      "to": "Zone A",
+      "distance": "50m"
+    },
+    {
+      "from": "Zone A",
+      "to": "Zone B",
+      "distance": "30m"
+    }
+  ],
+  "announcements": [
+    {
+      "message": "Avoid Zone A due to heavy crowd",
+      "priority": "high"
+    },
+    {
+      "message": "DJ Night starting in 10 minutes",
+      "priority": "medium"
+    }
+  ],
+  "general_faq": {
+    "tickets": "Tickets can be booked online via our official app or at the physical Box Office near the Entrance Gate.",
+    "emergency_contact": "For any emergencies, please call the unified event help desk at 1-800-FEST-911 or find staff in high-visibility yellow jackets.",
+    "lost_and_found": "Lost and found is located at the Main Information Center near the Entrance Gate.",
+    "parking": "General parking is fully occupied. Please use the South Overflow Lot or the festival shuttle service."
+  }
+}
