@@ -710,16 +710,7 @@ function App() {
                 )}
               </div>
 
-              {pin.length === 4 && (
-                <button 
-                  className="action-btn org-purple"
-                  style={{width: '280px', padding: '16px', borderRadius: '16px', fontSize: '1rem', animation: 'popIn 0.3s ease forwards', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'}}
-                  onClick={() => handleCreatePin()}
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Setting Up...' : <>Proceed to Dashboard <Sparkles size={18} /></>}
-                </button>
-              )}
+              {/* Redundant launch button removed in favor of integrated keypad arrow */}
 
               <div style={{fontSize: '0.75rem', opacity: 0.6, maxWidth: '250px', textAlign: 'center', marginTop: '10px'}}>
                 Write this down! This PIN will be required to access your Command Center.
