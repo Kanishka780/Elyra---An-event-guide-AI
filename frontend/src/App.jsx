@@ -835,11 +835,13 @@ function App() {
         )}
 
         {/* Column 3: Live Feed / Notifications */}
-        {(!isMobile || activeTab === 'alerts') && (eventData?.announcements?.length > 0 || eventData?.emergency?.active_cases?.length > 0) && (
+        {(!isMobile || activeTab === 'alerts') && (
           <div className="glass-panel alerts-sidebar">
-            <h2><Zap size={20} className="text-primary" style={{display: 'inline', verticalAlign: 'middle', marginRight: '8px'}} /> Live Updates</h2>
+            <div className="chat-header" style={{borderBottom: '1px solid var(--border-light)', marginBottom: '16px', padding: '0 0 12px 0'}}>
+              <h1 style={{fontSize: '1.2rem'}}><Zap size={22} className="text-primary" /> Live Updates</h1>
+            </div>
             <div className="alerts-list">
-              {eventData.emergency?.active_cases?.map((em, i) => (
+              {eventData?.emergency?.active_cases?.length > 0 ? eventData.emergency.active_cases.map((em, i) => (
                 <div key={`em-${i}`} className="alert-card emergency">
                    <div style={{display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', marginBottom: '6px'}}>
                       <Zap size={16} /> EMERGENCY ALERT
@@ -847,15 +849,21 @@ function App() {
                    <p>{em.message}</p>
                    <p style={{fontSize: '0.75rem', marginTop: '6px', opacity: 0.8}}><MapPin size={10} style={{display:'inline'}}/> {em.zone}</p>
                 </div>
-              ))}
-              {eventData.announcements?.map((ann, i) => (
+              )) : null}
+              
+              {eventData?.announcements?.length > 0 ? eventData.announcements.map((ann, i) => (
                 <div key={`ann-${i}`} className={`alert-card ${ann.priority === 'high' ? 'high-priority' : 'normal'}`}>
                    <div style={{display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', marginBottom: '6px'}}>
                       <Star size={14} /> ANNOUNCEMENT
                    </div>
                    <p>{ann.message}</p>
                 </div>
-              ))}
+              )) : (
+                <div style={{textAlign: 'center', padding: '40px 20px', opacity: 0.5}}>
+                  <Sparkles size={32} style={{marginBottom: '12px'}} />
+                  <p>No new announcements yet. Stay tuned!</p>
+                </div>
+              )}
             </div>
           </div>
         )}

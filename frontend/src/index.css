@@ -593,33 +593,38 @@ h1, h2, h3, h4, h5, h6 {
 
   /* Identity Portal Mobile Fix */
   .portal-container {
-    flex-direction: column;
-    padding: 40px 20px;
-    gap: 20px;
-    justify-content: flex-start;
+    flex-direction: row; /* Side-by-side on mobile to fit one screen */
+    flex-wrap: wrap;
+    padding: 20px;
+    gap: 12px;
+    align-content: center;
+    overflow: hidden;
+    height: 100vh; /* Lock to viewport */
   }
   .portal-card {
-    width: 100%;
-    max-width: 350px;
-    min-height: 220px;
+    width: 47%; /* Fit two horizontally */
+    min-height: 180px;
     height: auto;
-    padding: 30px 20px;
+    padding: 15px 10px;
+    border-radius: 20px;
+    justify-content: center;
   }
   .portal-card h1 {
-    font-size: 1.8rem;
-    margin-bottom: 10px;
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+    letter-spacing: 0;
   }
   .portal-card p {
-    font-size: 0.9rem;
+    display: none; /* Hide descriptions to fit UI in one screen */
   }
   .portal-icon-wrapper {
-    width: 70px;
-    height: 70px;
-    margin-bottom: 15px;
+    width: 50px;
+    height: 50px;
+    margin-bottom: 10px;
   }
   .portal-icon-wrapper svg {
-    width: 32px;
-    height: 32px;
+    width: 24px;
+    height: 24px;
   }
 }
 
