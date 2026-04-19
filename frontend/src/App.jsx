@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import axios from 'axios';
-import { Send, MapPin, Clock, Calendar, Zap, X, CheckCircle, Navigation, Star, Music, Coffee, Sparkles, PartyPopper, Moon, Sun, Mic, Bot, Upload, ShieldCheck, User, QrCode } from 'lucide-react';
+import { Send, MapPin, Clock, Calendar, Zap, X, CheckCircle, Navigation, Star, Music, Coffee, Sparkles, PartyPopper, Moon, Sun, Mic, Bot, Upload, ShieldCheck, User, QrCode, UploadCloud } from 'lucide-react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import './index.css';

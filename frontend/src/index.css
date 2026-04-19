@@ -355,25 +355,27 @@ h1, h2, h3, h4, h5, h6 {
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
 /* ═══════════════════════════ CHAT MESSAGES ═══════════════════════════ */
-.chat-messages {
+.messages-container {
   flex: 1; padding: 24px; overflow-y: auto;
   display: flex; flex-direction: column; gap: 16px;
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 212, 204, 0.15) transparent;
+  min-height: 400px; /* Ensure it doesn't shrink too much */
 }
-.chat-messages::-webkit-scrollbar { width: 4px; }
-.chat-messages::-webkit-scrollbar-track { background: transparent; }
-.chat-messages::-webkit-scrollbar-thumb { background: rgba(0, 212, 204, 0.15); border-radius: 2px; }
+.messages-container::-webkit-scrollbar { width: 4px; }
+.messages-container::-webkit-scrollbar-track { background: transparent; }
+.messages-container::-webkit-scrollbar-thumb { background: rgba(0, 212, 204, 0.15); border-radius: 2px; }
 
 .message {
-  max-width: 80%; padding: 14px 18px; border-radius: 16px;
-  line-height: 1.6; font-size: 0.9rem;
+  max-width: 80%; padding: 14px 18px; border-radius: 20px;
+  line-height: 1.6; font-size: 0.95rem;
   animation: bubbleEnter 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
 }
 .message.user {
   align-self: flex-end;
-  background: linear-gradient(135deg, var(--primary), rgba(0, 160, 155, 0.9));
+  background: linear-gradient(135deg, var(--primary), #00A09B);
   color: #fff;
   border-bottom-right-radius: 4px;
 }
@@ -549,7 +551,8 @@ h1, h2, h3, h4, h5, h6 {
   .app-container {
     flex-direction: column; height: 100vh; height: 100dvh;
     width: 100vw; border-radius: 0; gap: 0; 
-    padding-bottom: 80px; /* Increased padding to clear mobile-nav */
+    padding: 10px; /* Reduced padding to give more room */
+    padding-bottom: 80px;
   }
   .glass-panel { border-radius: 0; border: none; backdrop-filter: none; }
 
