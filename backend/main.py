@@ -58,7 +58,37 @@ def verify_admin(request: AdminVerifyRequest):
 
 @app.get("/api/event_status")
 def get_event_status():
+    global BASE_EVENT_DATA
     return BASE_EVENT_DATA
+
+@app.post("/api/upload-csv")
+async def upload_csv(file: UploadFile = File(...)):
+    global BASE_EVENT_DATA
+    try:
+        content = await file.read()
+        df_text = content.decode('utf-8')
+        reader = csv.DictReader(io.StringIO(df_text))
+        new_events = []
+        for i, row in enumerate(reader):
+            new_events.append({
+                "id": f"upload-{i}",
+                "name": row.get('name', 'Unnamed Event'),
+                "location": row.get('location', 'TBD'),
+                "zone": row.get('zone', 'Zone A'),
+                "startTime": row.get('startTime', datetime.datetime.now().isoformat()),
+                "endTime": row.get('endTime', datetime.datetime.now().isoformat()),
+                "description": row.get('description', '')
+            })
+        BASE_EVENT_DATA["events"] = new_events
+        return {"success": True, "count": len(new_events)}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/reset-data")
+def reset_data():
+    global BASE_EVENT_DATA
+    BASE_EVENT_DATA = load_data()
+    return {"success": True}
 
 @app.post("/api/chat")
 async def chat_with_assistant(request: ChatRequest):
