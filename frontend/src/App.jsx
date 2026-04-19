@@ -313,12 +313,14 @@ function App() {
     return (new Date(now - offset)).toISOString().slice(0, 16);
   };
 
-  const [messages, setMessages] = useState([
-    { 
-      role: 'assistant', 
-      text: 'Welcome to Elyra! ✨ I am here to assist you in navigating the venue, answering questions about the schedule, and providing real-time recommendations. How can I help you today?' 
-    }
+  // Split Chat Histories
+  const [organiserMessages, setOrganiserMessages] = useState([
+    { role: 'assistant', text: "Systems online. I'm Elyra, your Command Center AI. How can I help you manage the event?" }
   ]);
+  const [attendeeMessages, setAttendeeMessages] = useState([
+    { role: 'assistant', text: "Welcome! I'm Elyra, your personal AI guide. How can I help you navigate the event?" }
+  ]);
+  
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [suggestedActions, setSuggestedActions] = useState([
@@ -372,7 +374,7 @@ function App() {
   // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [organiserMessages, attendeeMessages]);
 
   // Fetch event data
   const fetchEventStatus = useCallback(async () => {
@@ -392,19 +394,27 @@ function App() {
     const textToSend = queryText || input;
     if (!textToSend.trim()) return;
 
-    setMessages(prev => [...prev, { role: 'user', text: textToSend }]);
+    const isOrg = appView === 'organiser';
+    const setTargetMessages = isOrg ? setOrganiserMessages : setAttendeeMessages;
+
+    setTargetMessages(prev => [...prev, { role: 'user', text: textToSend }]);
     setInput('');
     setIsLoading(true);
     setSuggestedActions([]);
 
     try {
+      const chatHistory = isOrg ? organiserMessages : attendeeMessages;
+      const historyString = chatHistory
+        .map(m => `${m.role === 'assistant' ? 'AI' : 'User'}: ${m.text}`)
+        .join('\n');
+
       const response = await axios.post(`${API_BASE_URL}/chat`, {
         query: textToSend,
         user_zone: currentZone,
         current_time: simulatedTime + "+05:30"
       });
 
-      setMessages(prev => [...prev, { 
+      setTargetMessages(prev => [...prev, { 
         role: 'assistant', 
         text: response.data.reply,
         action: response.data.action,
@@ -414,7 +424,7 @@ function App() {
         setSuggestedActions(response.data.suggested_actions);
       }
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'assistant', text: 'Sorry, I am having trouble connecting to the backend server. Make sure it is running and your API key is set!' }]);
+      setTargetMessages(prev => [...prev, { role: 'assistant', text: 'Sorry, I am having trouble connecting to the backend server. Make sure it is running and your API key is set!' }]);
     } finally {
       setIsLoading(false);
     }
@@ -515,13 +525,12 @@ function App() {
 
       // If event is approaching in exactly 15 minutes or less, inject a message
       if (diffMinutes > 0 && diffMinutes <= 15) {
-        setMessages(prev => [
-          ...prev, 
-          { 
-            role: 'assistant', 
-            text: `✨ **Heads up!** The **${event.name}** is starting in exactly ${Math.round(diffMinutes)} minutes at the **${event.zone}**. Would you like directions to get there?` 
-          }
-        ]);
+        const msg = { 
+          role: 'assistant', 
+          text: `✨ **Heads up!** The **${event.name}** is starting in exactly ${Math.round(diffMinutes)} minutes at the **${event.zone}**. Would you like directions to get there?` 
+        };
+        setOrganiserMessages(prev => [...prev, msg]);
+        setAttendeeMessages(prev => [...prev, msg]);
         
         setNotifiedEvents(prev => new Set(prev).add(event.id));
       }
@@ -610,7 +619,7 @@ function App() {
                 ← Back to Selection
               </button>
             </div>
-          ) : (
+          ) : orgAuthStep === 'pin' ? (
             <div className={`pin-auth-container ${pinError ? 'shake' : ''}`} style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px', animation: 'fadeIn 0.4s ease forwards'}}>
               <div style={{textAlign: 'center'}}>
                 <h2 style={{fontSize: '1.5rem', fontWeight: '700', marginBottom: '8px'}}>Secure Admin Entry</h2>
@@ -751,6 +760,7 @@ function App() {
   /* ═══════════════════════════════ VIEW: DASHBOARDS ═══════════════════════════════ */
   const isOrganiserView = appView === 'organiser';
   const showAdminControls = isOrganiserView;
+  const currentMessages = isOrganiserView ? organiserMessages : attendeeMessages;
 
   return (
     <>
@@ -933,18 +943,19 @@ function App() {
             </div>
           </div>
           
-          <div className="chat-messages">
-            {messages.map((m, i) => (
-              <div key={i} className={`message ${m.role}`}>
-                <div>{m.text.split('\n').map((line, idx) => <p key={idx}>{line}</p>)}</div>
-
-                {m.action === 'show_map' && (
+          <div className="messages-container">
+            {currentMessages.map((msg, idx) => (
+              <div key={idx} className={`message ${msg.role}`}>
+                <div className="message-bubble">
+                  {msg.text}
+                </div>
+                {msg.action === 'show_map' && (
                   <div className="virtual-map">
-                    {m.path && Array.isArray(m.path) ? (
-                      m.path.map((zone, idx) => (
+                    {msg.path && Array.isArray(msg.path) ? (
+                      msg.path.map((zone, idx) => (
                         <React.Fragment key={idx}>
-                          <div className={`map-node ${idx === 0 ? 'start' : idx === m.path.length - 1 ? 'end' : 'intermediate'}`}>
-                            {idx === m.path.length - 1 ? <Zap size={16}/> : idx === 0 ? <MapPin size={16}/> : <div className="intermediate-dot"></div>}
+                          <div className={`map-node ${idx === 0 ? 'start' : idx === msg.path.length - 1 ? 'end' : 'intermediate'}`}>
+                            {idx === msg.path.length - 1 ? <Zap size={16}/> : idx === 0 ? <MapPin size={16}/> : <div className="intermediate-dot"></div>}
                             {zone}
                           </div>
                           {idx < m.path.length - 1 && (
