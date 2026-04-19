@@ -281,7 +281,7 @@ def chat_with_assistant(request: ChatRequest):
     try:
          # Use the structured output capability
         response = client.models.generate_content(
-            model='gemini-1.5-flash',
+            model='gemini-2.0-flash',
             contents=request.query,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,

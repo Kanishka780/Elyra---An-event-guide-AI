@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import axios from 'axios';
-import { Send, MapPin, Clock, Calendar, Zap, X, CheckCircle, Navigation, Star, Music, Coffee, Sparkles, PartyPopper, Moon, Sun, Mic, Bot, Upload, ShieldCheck, User, QrCode, UploadCloud } from 'lucide-react';
+import { Send, MapPin, Clock, Calendar, Zap, X, CheckCircle, Navigation, Star, Music, Coffee, Sparkles, PartyPopper, Moon, Sun, Mic, Bot, Upload, ShieldCheck, User, QrCode, UploadCloud, ArrowRight } from 'lucide-react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import './index.css';
@@ -459,17 +459,23 @@ function App() {
     }
   };
 
-  // Keyboard support for PIN Pad
+  // Keyboard support for PIN Pad (both authentication and setup)
   useEffect(() => {
-    if (appView !== 'organiser_auth' || orgAuthStep !== 'pin') return;
+    if (appView !== 'organiser_auth') return;
+    if (orgAuthStep !== 'pin' && orgAuthStep !== 'set_pin') return;
 
     const handleKeyDown = (e) => {
       if (e.key >= '0' && e.key <= '9') {
-        handlePinInput(e.key);
+        if (pin.length < 4) {
+          setPin(prev => prev + e.key);
+        }
       } else if (e.key === 'Backspace') {
         setPin(prev => prev.slice(0, -1));
       } else if (e.key === 'Escape') {
         setOrgAuthStep('choice');
+      } else if (e.key === 'Enter' && pin.length === 4) {
+        if (orgAuthStep === 'pin') handleVerifyAdmin();
+        if (orgAuthStep === 'set_pin') handleCreatePin();
       }
     };
 
@@ -697,7 +703,11 @@ function App() {
                     setPin(pin + '0');
                   }
                 }}>0</button>
-                <button onClick={() => setPin(pin.slice(0, -1))} style={{fontSize: '0.7rem', color: 'var(--text-muted)'}}>DEL</button>
+                {pin.length === 4 ? (
+                  <button onClick={() => handleCreatePin()} className="text-primary" style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}><ArrowRight size={20}/></button>
+                ) : (
+                  <button onClick={() => setPin(pin.slice(0, -1))} style={{fontSize: '0.7rem', color: 'var(--text-muted)'}}>DEL</button>
+                )}
               </div>
 
               {pin.length === 4 && (
@@ -711,7 +721,7 @@ function App() {
                 </button>
               )}
 
-              <div style={{fontSize: '0.75rem', opacity: 0.6, maxWidth: '250px', textAlign: 'center'}}>
+              <div style={{fontSize: '0.75rem', opacity: 0.6, maxWidth: '250px', textAlign: 'center', marginTop: '10px'}}>
                 Write this down! This PIN will be required to access your Command Center.
               </div>
             </div>
