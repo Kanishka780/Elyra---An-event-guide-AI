@@ -109,8 +109,16 @@ async def chat_with_assistant(request: ChatRequest):
             }
         
     except Exception as e:
+        # Automatic Model Discovery to find what your project actually supports
+        available_models = "None found"
+        try:
+            m_list = [m.name for m in genai.list_models()]
+            available_models = ", ".join(m_list[:5]) # Show first 5
+        except:
+            pass
+            
         return {
-            "reply": f"[SYNC-FIX-V4] Connection Error: {str(e)}. Please wait 30 seconds and try again.",
+            "reply": f"[SYNC-FIX-V5] Connection Error: {str(e)}. AVAILABLE MODELS FOR YOUR KEY: [{available_models}]. Please tell me which ones are in that list!",
             "suggested_actions": ["Try again", "Show map"]
         }
 
