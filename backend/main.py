@@ -121,5 +121,5 @@ if os_mod.path.exists(STATIC_DIR):
     app.mount("/assets", StaticFiles(directory=os_mod.path.join(STATIC_DIR, "assets")), name="assets")
     @app.get("/", include_in_schema=False)
     def serve_root(): return FileResponse(os_mod.path.join(STATIC_DIR, "index.html"))
-    @get("/{full_path:path}", include_in_schema=False)
+    @app.get("/{full_path:path}", include_in_schema=False)
     def serve_spa(full_path: str): return FileResponse(os_mod.path.join(STATIC_DIR, "index.html"))
