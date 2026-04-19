@@ -69,9 +69,8 @@ async def chat_with_assistant(request: ChatRequest):
         return {"reply": "Configuration Error: No AI API key found.", "suggested_actions": []}
 
     try:
-        # 🔗 V7: DIRECT REST STABILIZER (Bypassing SDK to avoid v1beta errors)
-        # Using the absolute most stable 'v1' endpoint
-        url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
+        # 🔗 THE FINAL TARGET: v1beta + gemini-1.5-flash (AI Studio Stable Path)
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
         
         headers = {'Content-Type': 'application/json'}
         
@@ -99,22 +98,24 @@ async def chat_with_assistant(request: ChatRequest):
         if response.status_code != 200:
             error_msg = resp_json.get('error', {}).get('message', 'Unknown API Error')
             return {
-                "reply": f"[V7 PROTECT] API Error: {error_msg}. Status code: {response.status_code}",
+                "reply": f"API Connection issue: {error_msg}. Status code: {response.status_code}",
                 "suggested_actions": ["Try again", "Show map"]
             }
 
-        # Extracting text from standard Gemini REST response
+        # Parsing the standard Gemini REST response
         try:
             raw_text = resp_json['candidates'][0]['content']['parts'][0]['text']
-            # Clean and parse
             clean_text = raw_text.replace('```json', '').replace('```', '').strip()
             return json.loads(clean_text)
         except Exception as parse_err:
-             return {"reply": raw_text if 'raw_text' in locals() else str(resp_json), "suggested_actions": ["Ask something else", "Show map"]}
+             # Fallback if raw text returned
+             if 'raw_text' in locals():
+                return {"reply": raw_text, "suggested_actions": ["Ask something else", "Show map"]}
+             return {"reply": str(resp_json), "suggested_actions": ["Try again", "Show map"]}
             
     except Exception as e:
         return {
-            "reply": f"[V7 PROTECT] System Connection issue: {str(e)}. Please retry.",
+            "reply": f"System Connection issue: {str(e)}. Please retry.",
             "suggested_actions": ["Try again", "Show map"]
         }
 
