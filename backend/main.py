@@ -28,7 +28,10 @@ DATA_FILE = os.path.join(os.path.dirname(__file__), "event_data.json")
 def load_data():
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, "r") as f:
-            return json.load(f)
+            try:
+                return json.load(f)
+            except:
+                pass
     return {"events": [], "zones": [], "facilities": []}
 
 BASE_EVENT_DATA = load_data()
@@ -40,12 +43,6 @@ class AdminVerifyRequest(BaseModel):
 class ChatRequest(BaseModel):
     query: str
     user_zone: str = "Entrance Gate"
-
-def get_dynamic_status(sim_time_str: str = None):
-    # Deep copy base data
-    data = json.loads(json.dumps(BASE_EVENT_DATA))
-    # ... (Simplified for speed, we keep the data the same for now)
-    return data
 
 @app.post("/api/set-admin-pin")
 def set_admin_pin(request: AdminVerifyRequest):
@@ -63,66 +60,47 @@ def verify_admin(request: AdminVerifyRequest):
 def get_event_status():
     return BASE_EVENT_DATA
 
-@app.post("/api/upload-csv")
-async def upload_csv(file: UploadFile = File(...)):
-    global BASE_EVENT_DATA
-    contents = await file.read()
-    # Process CSV...
-    BASE_EVENT_DATA = {"events": [], "zones": [], "facilities": []} # placeholder for logic
-    return {"success": True}
-
 @app.post("/api/chat")
 async def chat_with_assistant(request: ChatRequest):
-    # Current simulated time logic
     simulated_time = datetime.datetime.now().isoformat()
-    
     api_key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")
+    
     if not api_key:
         return {"reply": "Configuration Error: No AI API key found.", "suggested_actions": []}
 
     try:
         genai.configure(api_key=api_key)
-        # Using the absolute most universal model name
-        model = genai.GenerativeModel('gemini-pro')
+        # 🚀 UPGRADED to Gemini 2.0 Flash - The high-performance engine for your project
+        model = genai.GenerativeModel('gemini-2.0-flash')
         
-        prompt = f"""
-        Answer as Elyra, an AI Event Assistant.
-        CONETXT: {json.dumps(BASE_EVENT_DATA)}
-        USER QUERY: {request.query}
+        system_prompt = f"""
+        You are Elyra, a premium AI Event Assistant. 
+        CONTEXT: {json.dumps(BASE_EVENT_DATA)}
+        CURRENT_TIME: {simulated_time}
+        USER_ZONE: {request.user_zone}
         
-        Respond ONLY with a valid JSON object:
-        {{"reply": "your message", "suggested_actions": ["question 1", "question 2"]}}
+        LOGIC:
+        1. Answer based on the CONTEXT. Be helpful and expert.
+        2. Always suggest 2 follow-up questions.
+        3. Respond strictly in JSON format:
+        {{"reply": "your text", "suggested_actions": ["question 1", "question 2"]}}
         """
         
-        response = model.generate_content(prompt)
-        text = response.text
+        response = model.generate_content(f"{system_prompt}\n\nUSER QUERY: {request.query}")
         
         try:
-            # Clean and parse JSON
-            clean_text = text.replace('```json', '').replace('```', '').strip()
-            return json.loads(clean_text)
+             clean_text = response.text.replace('```json', '').replace('```', '').strip()
+             return json.loads(clean_text)
         except:
-            # Fallback if AI skips JSON format
-            return {
-                "reply": text,
-                "suggested_actions": ["Ask something else", "Show map"]
-            }
-        
-    except Exception as e:
-        # Automatic Model Discovery to find what your project actually supports
-        available_models = "None found"
-        try:
-            m_list = [m.name for m in genai.list_models()]
-            available_models = ", ".join(m_list[:5]) # Show first 5
-        except:
-            pass
+             return {"reply": response.text, "suggested_actions": ["What else?", "Show map"]}
             
+    except Exception as e:
         return {
-            "reply": f"[SYNC-FIX-V5] Connection Error: {str(e)}. AVAILABLE MODELS FOR YOUR KEY: [{available_models}]. Please tell me which ones are in that list!",
+            "reply": f"AI Engine Connection issue: {str(e)}. Please try again in a few moments.",
             "suggested_actions": ["Try again", "Show map"]
         }
 
-# Static file serving (Production)
+# Static serving
 import os as os_mod
 STATIC_DIR = os_mod.path.join(os_mod.path.dirname(__file__), "static")
 if os_mod.path.exists(STATIC_DIR):
