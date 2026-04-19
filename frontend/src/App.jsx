@@ -504,7 +504,7 @@ function App() {
           </div>
           <div className="portal-card att-teal" onClick={() => setAppView('attendee_scan')}>
             <div className="portal-icon-wrapper"><User size={48} /></div>
-            <h1>Elyra Attendee</h1>
+            <h1>Attendee</h1>
             <p>Scan your event code to unlock your personalized AI travel guide and live venue navigator.</p>
           </div>
         </div>
@@ -752,7 +752,7 @@ function App() {
         <div className="glass-panel chat-container" style={{position: 'relative', flex: 2}}>
           <div className="chat-header">
             <h1>
-              Event Guide AI
+              Elyra
               <Bot size={28} className="bot-hologram" />
             </h1>
             <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
