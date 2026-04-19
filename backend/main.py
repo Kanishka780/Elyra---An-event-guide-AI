@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import json
 import os
 import datetime
-import google.generativeai as genai
+from google import genai
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -69,12 +69,13 @@ async def chat_with_assistant(request: ChatRequest):
         return {"reply": "Configuration Error: No AI API key found.", "suggested_actions": []}
 
     try:
-        # 🛡️ 2026 STABLE CONFIGURATION
-        # Using the official SDK which defaults to the 'v1' stable production path.
-        # We explicitly lock to 'gemini-1.5-flash' which is the flagship stable model.
-        genai.configure(api_key=api_key)
+        # 🚀 2026 GEMINI 2.5 MIGRATION (Modern Unified SDK)
+        # We are now using the 'google-genai' library which is the 2026 production standard.
+        client = genai.Client(api_key=api_key)
         
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        # 'gemini-2.5-flash' is the stable current flagship as of April 2026.
+        # This replaces the retired 1.5 and 1.0 models.
+        model_id = "gemini-2.5-flash"
         
         system_prompt = f"""
         You are Elyra, a premium AI Event Assistant.
@@ -89,8 +90,11 @@ async def chat_with_assistant(request: ChatRequest):
         {{"reply": "text response", "suggested_actions": ["question 1", "question 2"]}}
         """
         
-        # Inference using the stable production path
-        response = model.generate_content(f"{system_prompt}\n\nUSER QUERY: {request.query}")
+        # New unified SDK method
+        response = client.models.generate_content(
+            model=model_id,
+            contents=f"{system_prompt}\n\nUSER QUERY: {request.query}"
+        )
         
         try:
              raw_text = response.text
@@ -102,10 +106,10 @@ async def chat_with_assistant(request: ChatRequest):
              return {"reply": response.text, "suggested_actions": ["Ask about events", "Show map"]}
             
     except Exception as e:
-        # Standard production error response
+        # Standard production error response with refined diagnostics
         return {
-            "reply": f"Elyra is momentarily unavailable (Connection Error: {str(e)}). Please retry shortly.",
-            "suggested_actions": ["Retry", "Show map"]
+            "reply": f"Elyra Service Notice: The AI engine (2.5 Stable) reported a connection issue ({str(e)}). Please refresh and try again.",
+            "suggested_actions": ["Refresh", "Show map"]
         }
 
 # Static serving
@@ -117,5 +121,5 @@ if os_mod.path.exists(STATIC_DIR):
     app.mount("/assets", StaticFiles(directory=os_mod.path.join(STATIC_DIR, "assets")), name="assets")
     @app.get("/", include_in_schema=False)
     def serve_root(): return FileResponse(os_mod.path.join(STATIC_DIR, "index.html"))
-    @app.get("/{full_path:path}", include_in_schema=False)
+    @get("/{full_path:path}", include_in_schema=False)
     def serve_spa(full_path: str): return FileResponse(os_mod.path.join(STATIC_DIR, "index.html"))
