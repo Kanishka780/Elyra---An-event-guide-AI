@@ -6,7 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import json
 import os
 import datetime
-import google.generativeai as genai
+# 🚀 Migration to the NEW Google GenAI SDK
+from google import genai
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -69,9 +70,8 @@ async def chat_with_assistant(request: ChatRequest):
         return {"reply": "Configuration Error: No AI API key found.", "suggested_actions": []}
 
     try:
-        genai.configure(api_key=api_key)
-        # 🚀 UPGRADED to Gemini 2.0 Flash - The high-performance engine for your project
-        model = genai.GenerativeModel('gemini-2.0-flash')
+        # Initialize the NEW GenAI Client
+        client = genai.Client(api_key=api_key)
         
         system_prompt = f"""
         You are Elyra, a premium AI Event Assistant. 
@@ -86,17 +86,24 @@ async def chat_with_assistant(request: ChatRequest):
         {{"reply": "your text", "suggested_actions": ["question 1", "question 2"]}}
         """
         
-        response = model.generate_content(f"{system_prompt}\n\nUSER QUERY: {request.query}")
+        # New Inference Logic (google-genai v1)
+        response = client.models.generate_content(
+            model='gemini-2.0-flash',
+            contents=f"{system_prompt}\n\nUSER QUERY: {request.query}"
+        )
+        
+        text = response.text
         
         try:
-             clean_text = response.text.replace('```json', '').replace('```', '').strip()
+             # Cleanup and Parse
+             clean_text = text.replace('```json', '').replace('```', '').strip()
              return json.loads(clean_text)
         except:
-             return {"reply": response.text, "suggested_actions": ["What else?", "Show map"]}
+             return {"reply": text, "suggested_actions": ["What else?", "Show map"]}
             
     except Exception as e:
         return {
-            "reply": f"AI Engine Connection issue: {str(e)}. Please try again in a few moments.",
+            "reply": f"AI Engine Connection issue: {str(e)}. Please retry in a few moments.",
             "suggested_actions": ["Try again", "Show map"]
         }
 
