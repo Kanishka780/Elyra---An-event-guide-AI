@@ -5,8 +5,8 @@ WORKDIR /app/frontend
 # Copy dependency files
 COPY frontend/package*.json ./
 
-# Clean install of dependencies
-RUN npm ci
+# Flexible install of dependencies
+RUN npm install
 
 COPY frontend/ ./
 RUN npm run build
