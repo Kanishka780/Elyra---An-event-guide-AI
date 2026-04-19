@@ -82,26 +82,35 @@ async def chat_with_assistant(request: ChatRequest):
 
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        # Using the absolute most universal model name
+        model = genai.GenerativeModel('gemini-pro')
         
         prompt = f"""
-        User Query: {request.query}
-        Context Time: {simulated_time}
-        Location: {request.user_zone}
-        Data: {json.dumps(BASE_EVENT_DATA)}
+        Answer as Elyra, an AI Event Assistant.
+        CONETXT: {json.dumps(BASE_EVENT_DATA)}
+        USER QUERY: {request.query}
         
-        Respond as Elyra AI assistant in JSON format.
+        Respond ONLY with a valid JSON object:
+        {{"reply": "your message", "suggested_actions": ["question 1", "question 2"]}}
         """
         
         response = model.generate_content(prompt)
         text = response.text
-        # Cleanup
-        clean_text = text.replace('```json', '').replace('```', '').strip()
-        return json.loads(clean_text)
+        
+        try:
+            # Clean and parse JSON
+            clean_text = text.replace('```json', '').replace('```', '').strip()
+            return json.loads(clean_text)
+        except:
+            # Fallback if AI skips JSON format
+            return {
+                "reply": text,
+                "suggested_actions": ["Ask something else", "Show map"]
+            }
         
     except Exception as e:
         return {
-            "reply": f"[SYNC-FIX-V3] Connection Error: {str(e)}. Please retry.",
+            "reply": f"[SYNC-FIX-V4] Connection Error: {str(e)}. Please wait 30 seconds and try again.",
             "suggested_actions": ["Try again", "Show map"]
         }
 
