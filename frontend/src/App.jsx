@@ -502,6 +502,22 @@ function App() {
     }
   };
 
+  const handleCreatePin = async () => {
+    if (pin.length < 4) return;
+    try {
+      setIsLoading(true);
+      const response = await axios.post(`${API_BASE_URL}/set-admin-pin`, { pin });
+      if (response.data.success) {
+        setIsAuthenticated(true);
+        setAppView('organiser');
+      }
+    } catch (error) {
+      alert(`Failed to confirm PIN: ${error.response?.data?.detail || error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleResetData = async () => {
     if (!confirm("Are you sure you want to reset to the default demo schedule?")) return;
     try {

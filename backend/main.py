@@ -294,8 +294,9 @@ def chat_with_assistant(request: ChatRequest):
         
     except Exception as e:
         print(f"Inference error: {e}")
+        # Verbose error for debugging
         return {
-            "reply": "I'm sorry, I'm having trouble connecting to my central brain right now. Please try again later.",
+            "reply": f"AI Connection Failure: {str(e)}. Please click 'Try again'. If the error persists, ensure your GOOGLE_API_KEY is active and valid.",
             "suggested_actions": ["Try again", "Show map"]
         }
 
