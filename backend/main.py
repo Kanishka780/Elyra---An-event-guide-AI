@@ -236,11 +236,13 @@ def chat_with_assistant(request: ChatRequest):
     else:
         simulated_time = datetime.datetime.now().isoformat()
     
-    # Init Gemini client. It expects GEMINI_API_KEY in environment
+    # Init Gemini client
+    api_key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        return {"reply": "Configuration Error: No AI API key found in the environment.", "suggested_actions": []}
+
     try:
-        # Initializing without explicit api_key tries to get it from env.
-        # Fallback provided if not set for some reason, though it will error on api call.
-        client = genai.Client()
+        client = genai.Client(api_key=api_key)
     except Exception as e:
         return {"reply": f"System error initializing AI: {str(e)}", "suggested_actions": []}
 
@@ -279,7 +281,7 @@ def chat_with_assistant(request: ChatRequest):
     try:
          # Use the structured output capability
         response = client.models.generate_content(
-            model='gemini-flash-latest',
+            model='gemini-1.5-flash',
             contents=request.query,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
