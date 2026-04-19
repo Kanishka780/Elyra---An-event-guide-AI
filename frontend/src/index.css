@@ -548,7 +548,8 @@ h1, h2, h3, h4, h5, h6 {
 
   .app-container {
     flex-direction: column; height: 100vh; height: 100dvh;
-    width: 100vw; border-radius: 0; gap: 0; padding-bottom: 60px;
+    width: 100vw; border-radius: 0; gap: 0; 
+    padding-bottom: 80px; /* Increased padding to clear mobile-nav */
   }
   .glass-panel { border-radius: 0; border: none; backdrop-filter: none; }
 
@@ -570,6 +571,56 @@ h1, h2, h3, h4, h5, h6 {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .mobile-nav-btn.active { color: var(--primary); }
+
+  /* Mobile Schedule Fixes */
+  .event-card {
+    padding: 18px;
+    margin-bottom: 12px;
+  }
+  .event-card h4 {
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+  }
+  .event-loc, .event-time {
+    font-size: 0.85rem;
+    opacity: 1;
+    color: var(--text-main);
+  }
+  .status-tag {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+  }
+
+  /* Identity Portal Mobile Fix */
+  .portal-container {
+    flex-direction: column;
+    padding: 40px 20px;
+    gap: 20px;
+    justify-content: flex-start;
+  }
+  .portal-card {
+    width: 100%;
+    max-width: 350px;
+    min-height: 220px;
+    height: auto;
+    padding: 30px 20px;
+  }
+  .portal-card h1 {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+  }
+  .portal-card p {
+    font-size: 0.9rem;
+  }
+  .portal-icon-wrapper {
+    width: 70px;
+    height: 70px;
+    margin-bottom: 15px;
+  }
+  .portal-icon-wrapper svg {
+    width: 32px;
+    height: 32px;
+  }
 }
 
 /* ═══════════════════════════ REDUCED MOTION ═══════════════════════════ */
