@@ -671,22 +671,29 @@ function App() {
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
                   <button key={num} onClick={() => {
                     if (pin.length < 4) {
-                      const newPin = pin + num;
-                      setPin(newPin);
-                      if (newPin.length === 4) handleCreatePin(newPin);
+                      setPin(pin + num);
                     }
                   }}>{num}</button>
                 ))}
                 <button onClick={() => setPin('')} style={{fontSize: '0.7rem', color: 'var(--text-muted)'}}>CLS</button>
                 <button onClick={() => {
                   if (pin.length < 4) {
-                    const newPin = pin + '0';
-                    setPin(newPin);
-                    if (newPin.length === 4) handleCreatePin(newPin);
+                    setPin(pin + '0');
                   }
                 }}>0</button>
                 <button onClick={() => setPin(pin.slice(0, -1))} style={{fontSize: '0.7rem', color: 'var(--text-muted)'}}>DEL</button>
               </div>
+
+              {pin.length === 4 && (
+                <button 
+                  className="action-btn org-purple"
+                  style={{width: '280px', padding: '16px', borderRadius: '16px', fontSize: '1rem', animation: 'popIn 0.3s ease forwards', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'}}
+                  onClick={() => handleCreatePin()}
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Setting Up...' : <>Proceed to Dashboard <Sparkles size={18} /></>}
+                </button>
+              )}
 
               <div style={{fontSize: '0.75rem', opacity: 0.6, maxWidth: '250px', textAlign: 'center'}}>
                 Write this down! This PIN will be required to access your Command Center.
