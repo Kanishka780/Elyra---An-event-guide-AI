@@ -86,9 +86,9 @@ async def chat_with_assistant(request: ChatRequest):
         {{"reply": "your text", "suggested_actions": ["question 1", "question 2"]}}
         """
         
-        # New Inference Logic (google-genai v1)
+        # Using the STABLE Gemini 1.5 Flash engine with the NEW SDK
         response = client.models.generate_content(
-            model='gemini-2.0-flash',
+            model='gemini-1.5-flash',
             contents=f"{system_prompt}\n\nUSER QUERY: {request.query}"
         )
         
