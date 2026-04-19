@@ -69,11 +69,12 @@ async def chat_with_assistant(request: ChatRequest):
         return {"reply": "Configuration Error: No AI API key found.", "suggested_actions": []}
 
     try:
-        # OFFICIAL SDK CONFIGURATION (Using the universal stable model: gemini-pro)
+        # 🛡️ 2026 STABLE CONFIGURATION
+        # Using the official SDK which defaults to the 'v1' stable production path.
+        # We explicitly lock to 'gemini-1.5-flash' which is the flagship stable model.
         genai.configure(api_key=api_key)
         
-        # gemini-pro is the most backward-compatible and universally accessible model
-        model = genai.GenerativeModel('gemini-pro')
+        model = genai.GenerativeModel('gemini-1.5-flash')
         
         system_prompt = f"""
         You are Elyra, a premium AI Event Assistant.
@@ -82,27 +83,29 @@ async def chat_with_assistant(request: ChatRequest):
         USER_ZONE: {request.user_zone}
         
         LOGIC:
-        1. Answer based on CONTEXT. 
-        2. Respond STRICTLY in JSON:
-        {{"reply": "text", "suggested_actions": ["q1", "q2"]}}
+        1. Answer strictly based on the provided CONTEXT. 
+        2. Be expert and professional.
+        3. Respond strictly in JSON:
+        {{"reply": "text response", "suggested_actions": ["question 1", "question 2"]}}
         """
         
-        # Inference using the official SDK
+        # Inference using the stable production path
         response = model.generate_content(f"{system_prompt}\n\nUSER QUERY: {request.query}")
         
-        raw_text = response.text
-        
         try:
-             # Cleanup and Parse
+             raw_text = response.text
+             # Cleanup markdown if present
              clean_text = raw_text.replace('```json', '').replace('```', '').strip()
              return json.loads(clean_text)
-        except:
-             return {"reply": raw_text, "suggested_actions": ["What else?", "Show map"]}
+        except Exception as parse_err:
+             # Fallback to plain text if JSON parsing fails
+             return {"reply": response.text, "suggested_actions": ["Ask about events", "Show map"]}
             
     except Exception as e:
+        # Standard production error response
         return {
-            "reply": f"AI Engine Connection issue: {str(e)}. Please retry in a few moments.",
-            "suggested_actions": ["Try again", "Show map"]
+            "reply": f"Elyra is momentarily unavailable (Connection Error: {str(e)}). Please retry shortly.",
+            "suggested_actions": ["Retry", "Show map"]
         }
 
 # Static serving
