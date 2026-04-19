@@ -5,7 +5,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import './index.css';
 
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = '/api';
 
 const ribbonIcons = [Star, Music, Coffee, Sparkles, PartyPopper, Zap];
 
