@@ -387,11 +387,17 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid rgba(0, 212, 204, 0.15);
   animation: bubbleEnter 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
-:root[data-theme="light"] .message.assistant,
-@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .message.assistant {
+:root[data-theme="light"] .message.assistant {
   background: rgba(255, 255, 255, 0.25);
   border-color: rgba(0, 137, 123, 0.2);
-} }
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .message.assistant {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(0, 137, 123, 0.2);
+  }
+}
 
 /* ═══════════════════════════ QUICK ACTIONS ═══════════════════════════ */
 .quick-actions { display: flex; flex-wrap: wrap; gap: 10px; padding: 0 24px 16px; }
