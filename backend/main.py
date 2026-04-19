@@ -85,9 +85,14 @@ async def chat_with_assistant(request: ChatRequest):
         
         LOGIC:
         1. Answer strictly based on the provided CONTEXT. 
-        2. Be expert and professional.
-        3. Respond strictly in JSON:
-        {{"reply": "text response", "suggested_actions": ["question 1", "question 2"]}}
+        2. Respond strictly in JSON:
+        {{
+          "reply": "text response", 
+          "suggested_actions": ["q1", "q2"],
+          "action": "show_map" (ONLY if user asks for directions or map),
+          "path": ["Start Zone", "Intermediate Zone", "End Zone"] (ONLY with show_map)
+        }}
+        3. If navigating, the 'path' must show the shortest logical route between zones using the CONTEXT.
         """
         
         # New unified SDK method

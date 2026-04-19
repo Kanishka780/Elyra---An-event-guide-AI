@@ -1025,7 +1025,7 @@ function App() {
                             {idx === msg.path.length - 1 ? <Zap size={16}/> : idx === 0 ? <MapPin size={16}/> : <div className="intermediate-dot"></div>}
                             {zone}
                           </div>
-                          {idx < m.path.length - 1 && (
+                          {idx < msg.path.length - 1 && (
                             <div className="map-path"><div className="path-line" style={{animationDelay: `${idx * 0.5}s`}}></div></div>
                           )}
                         </React.Fragment>
